@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuizVerse - Online Quiz App</title>
+<style>
+  :root { --bg1:#FFF0F6; --bg2:#EAF2FF; --bg3:#F3EBFF; --card:#fff; --text:#222; --muted:#666; --line:#dcdcea; --pri:#7C4DFF; --brand:linear-gradient(90deg,#7C4DFF,#E040FB,#FF6E7F); }
+  [data-theme="dark"] { --bg1:#12082B; --bg2:#1F1147; --bg3:#2B0F3A; --card:#241a40; --text:#f1eefc; --muted:#b5aed0; --line:#3d3360; --pri:#b39dff; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',Roboto,Arial,sans-serif; background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3)) fixed; color:var(--text); min-height:100vh; transition:color .3s; }
+  header { background:var(--brand); color:#fff; padding:16px 20px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 4px 14px rgba(124,77,255,.35); position:sticky; top:0; z-index:5; }
+  header h1 { font-size:22px; font-weight:800; flex:1; text-align:center; }
+  .hbtns { display:flex; gap:4px; min-width:100px; align-items:center; }
+  .hbtns.r { justify-content:flex-end; }
+  .ib { background:none; border:none; color:#fff; font-size:20px; cursor:pointer; padding:6px 8px; border-radius:8px; }
+  .ib:hover { background:rgba(255,255,255,.2); }
+  main { padding:20px; }
+  .screen { max-width:700px; margin:0 auto; animation:fade .45s ease; }
+  .screen.wide { max-width:1100px; }
+  .screen.narrow { max-width:440px; margin-top:24px; }
+  @keyframes fade { from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:none;} }
+  @keyframes pop { 0%{transform:scale(0);} 70%{transform:scale(1.15);} 100%{transform:scale(1);} }
+  @keyframes fall { to { transform:translateY(105vh) rotate(720deg); opacity:.9; } }
+  .card { background:var(--card); border-radius:20px; padding:24px; box-shadow:0 6px 18px rgba(0,0,0,.1); }
+  .center { text-align:center; }
+  .logo { width:90px; height:90px; border-radius:50%; background:var(--brand); display:flex; align-items:center; justify-content:center; font-size:44px; margin:0 auto 12px; animation:pop .8s ease; }
+  .brand { font-size:36px; font-weight:900; background:var(--brand); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .sub { color:var(--muted); margin-bottom:18px; }
+  .field { margin-bottom:14px; text-align:left; }
+  .field input { width:100%; padding:13px 14px; border:1.5px solid var(--line); border-radius:10px; font-size:15px; background:var(--card); color:var(--text); }
+  .field input:focus { outline:none; border-color:var(--pri); box-shadow:0 0 0 3px rgba(124,77,255,.2); }
+  .field.bad input { border-color:#ff1744; }
+  .err { color:#ff1744; font-size:13px; margin-top:4px; display:none; }
+  .field.bad .err { display:block; }
+  .btn { background:linear-gradient(90deg,var(--g1,#7C4DFF),var(--g2,#E040FB)); color:#fff; border:none; border-radius:30px; padding:14px 30px; font-size:16px; font-weight:700; cursor:pointer; box-shadow:0 4px 12px rgba(124,77,255,.4); transition:transform .12s, filter .15s; }
+  .btn:hover { filter:brightness(1.08); }
+  .btn:active { transform:scale(.96); }
+  .btn:disabled { opacity:.4; cursor:not-allowed; box-shadow:none; filter:none; }
+  .banner { background:var(--brand); color:#fff; border-radius:20px; padding:16px 20px; margin-bottom:18px; box-shadow:0 6px 18px rgba(224,64,251,.3); }
+  .banner b { font-size:18px; display:block; margin-bottom:4px; }
+  .grid { display:grid; grid-template-columns:1fr; gap:16px; }
+  @media (min-width:600px) { .grid { grid-template-columns:repeat(2,1fr); } }
+  @media (min-width:1000px) { .grid { grid-template-columns:repeat(3,1fr); } }
+  .cat { display:flex; align-items:center; gap:16px; cursor:pointer; color:#fff; background:linear-gradient(135deg,var(--g1),var(--g2)); transition:transform .15s, box-shadow .15s; animation:fade .5s ease backwards; padding:16px; }
+  .cat:hover { transform:translateY(-4px) scale(1.01); box-shadow:0 12px 24px rgba(0,0,0,.2); }
+  .cat .ic { width:58px; height:58px; border-radius:50%; background:rgba(255,255,255,.25); display:flex; align-items:center; justify-content:center; font-size:30px; flex-shrink:0; }
+  .cat h3 { font-size:20px; font-weight:800; }
+  .cat p { opacity:.85; font-size:14px; } .cat small { font-size:12px; }
+  .pills { display:flex; gap:8px; flex-wrap:wrap; justify-content:space-between; margin-bottom:14px; }
+  .pills.c { justify-content:center; }
+  .pill { color:#fff; padding:8px 14px; border-radius:20px; font-weight:700; font-size:15px; transition:background .3s; }
+  .p-pts { background:linear-gradient(90deg,#FF9800,#FF5722); }
+  .p-str { background:linear-gradient(90deg,#EC008C,#FC6767); }
+  .p-tm { background:linear-gradient(90deg,#2979FF,#00B0FF); }
+  .p-tm.low { background:linear-gradient(90deg,#FF1744,#FF5252); }
+  .p-ok { background:linear-gradient(90deg,#11998E,#38EF7D); }
+  .bar { height:12px; background:var(--line); border-radius:8px; overflow:hidden; margin:8px 0 18px; }
+  .bar div { height:100%; background:linear-gradient(90deg,var(--g1),var(--g2)); transition:width .5s ease; }
+  .q { font-size:20px; font-weight:700; color:#fff; background:linear-gradient(135deg,var(--g1),var(--g2)); border-radius:20px; padding:22px; margin-bottom:14px; }
+  .opt { display:flex; align-items:center; gap:12px; width:100%; text-align:left; padding:14px; margin-bottom:10px; border:2px solid var(--line); border-radius:16px; background:var(--card); color:var(--text); font-size:16px; cursor:pointer; transition:all .3s; }
+  .opt:hover:not(:disabled) { border-color:var(--pri); transform:translateX(4px); }
+  .opt .l { width:32px; height:32px; border-radius:50%; color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .opt .t { flex:1; }
+  .opt.correct { border-color:#2e9e4f; background:rgba(46,158,79,.18); }
+  .opt.wrong { border-color:#ff1744; background:rgba(255,23,68,.15); }
+  .opt.dim { opacity:.5; }
+  .fb { text-align:center; font-size:22px; font-weight:800; min-height:34px; margin:4px 0 10px; animation:pop .4s ease; }
+  .btns { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:14px; }
+  .ring { width:190px; height:190px; margin:0 auto 16px; position:relative; }
+  .ring svg { transform:rotate(-90deg); }
+  .ring circle { fill:none; stroke-width:14; }
+  .ring .bg { stroke:rgba(0,0,0,.1); }
+  .ring .fg { stroke:#E040FB; stroke-linecap:round; transition:stroke-dashoffset 1.3s ease; }
+  .ring .txt { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .ring .txt b { font-size:38px; font-weight:900; }
+  .rev { display:flex; gap:12px; padding:14px; margin-bottom:10px; text-align:left; border-radius:16px; }
+  .rev .m { font-size:22px; }
+  .rev small { color:var(--muted); display:block; margin-top:4px; white-space:pre-line; }
+  .lb { display:flex; align-items:center; gap:14px; padding:14px 18px; margin-bottom:10px; border-radius:16px; }
+  .lb .rk { width:40px; font-size:26px; text-align:center; font-weight:700; }
+  .lb .nm { flex:1; } .lb .nm small { color:var(--muted); display:block; }
+  .lb .sc { font-size:20px; font-weight:800; }
+  .conf { position:fixed; top:-20px; width:10px; height:14px; z-index:50; pointer-events:none; animation:fall linear forwards; }
+</style>
+</head>
+<body>
+<header>
+  <div class="hbtns" id="hl"></div>
+  <h1 id="title">QuizVerse</h1>
+  <div class="hbtns r"><span id="hr"></span><button class="ib" onclick="toggleTheme()" title="Toggle theme">🌓</button></div>
+</header>
+<main id="app"></main>
+
+<script>
+const bank = {
+ "Flutter & Dart": [
+  [
+   "Which language is used to write Flutter apps?",
+   [
+    "Java",
+    "Kotlin",
+    "Dart",
+    "Swift"
+   ],
+   2
+  ],
+  [
+   "Which widget is used for a scrollable list?",
+   [
+    "ListView",
+    "Stack",
+    "Row",
+    "Positioned"
+   ],
+   0
+  ],
+  [
+   "Which method updates the UI in a StatefulWidget?",
+   [
+    "build()",
+    "setState()",
+    "dispose()",
+    "initState()"
+   ],
+   1
+  ],
+  [
+   "Which widget layers children on top of each other?",
+   [
+    "Column",
+    "Row",
+    "Stack",
+    "Wrap"
+   ],
+   2
+  ],
+  [
+   "Which class is used with push() and pop()?",
+   [
+    "Navigator",
+    "Scaffold",
+    "Theme",
+    "Provider"
+   ],
+   0
+  ],
+  [
+   "Which widget arranges children horizontally?",
+   [
+    "Column",
+    "Row",
+    "Stack",
+    "Center"
+   ],
+   1
+  ],
+  [
+   "Which widget gives a screen an app bar and body?",
+   [
+    "Scaffold",
+    "Container",
+    "Card",
+    "Padding"
+   ],
+   0
+  ],
+  [
+   "Which keyword makes a compile-time constant in Dart?",
+   [
+    "final",
+    "const",
+    "static",
+    "var"
+   ],
+   1
+  ],
+  [
+   "What is the entry point of a Dart program?",
+   [
+    "start()",
+    "run()",
+    "main()",
+    "init()"
+   ],
+   2
+  ],
+  [
+   "Which widget shows a floating circular button?",
+   [
+    "FloatingActionButton",
+    "ElevatedButton",
+    "IconButton",
+    "TextButton"
+   ],
+   0
+  ],
+  [
+   "Which file lists a Flutter project's dependencies?",
+   [
+    "main.dart",
+    "pubspec.yaml",
+    "build.gradle",
+    "package.json"
+   ],
+   1
+  ],
+  [
+   "Which widget fills the remaining space in a Row or Column?",
+   [
+    "Padding",
+    "Expanded",
+    "Align",
+    "SizedBox"
+   ],
+   1
+  ],
+  [
+   "Which class gives you the screen width and height?",
+   [
+    "MediaQuery",
+    "Theme",
+    "Navigator",
+    "Scaffold"
+   ],
+   0
+  ],
+  [
+   "Which package provides ChangeNotifierProvider?",
+   [
+    "provider",
+    "http",
+    "sqflite",
+    "intl"
+   ],
+   0
+  ],
+  [
+   "Which method tells listeners that data has changed?",
+   [
+    "setState()",
+    "notifyListeners()",
+    "markDirty()",
+    "refresh()"
+   ],
+   1
+  ],
+  [
+   "Which widget is used to build a grid layout?",
+   [
+    "GridView",
+    "ListTile",
+    "Stack",
+    "Divider"
+   ],
+   0
+  ],
+  [
+   "Which widget type cannot change its state?",
+   [
+    "StatefulWidget",
+    "StatelessWidget",
+    "State",
+    "AnimatedWidget"
+   ],
+   1
+  ],
+  [
+   "Which command creates a new Flutter project?",
+   [
+    "flutter new",
+    "flutter create",
+    "flutter init",
+    "dart start"
+   ],
+   1
+  ],
+  [
+   "Which key triggers hot reload in the flutter run terminal?",
+   [
+    "r",
+    "q",
+    "h",
+    "c"
+   ],
+   0
+  ],
+  [
+   "Which widget adds empty space around its child?",
+   [
+    "Margin",
+    "Padding",
+    "Gap",
+    "Space"
+   ],
+   1
+  ],
+  [
+   "Which widget displays a string on screen?",
+   [
+    "Label",
+    "Text",
+    "TextView",
+    "Title"
+   ],
+   1
+  ],
+  [
+   "Which widget detects taps on its child?",
+   [
+    "GestureDetector",
+    "Scaffold",
+    "Divider",
+    "Spacer"
+   ],
+   0
+  ],
+  [
+   "What does Navigator.pop() do?",
+   [
+    "Opens a new screen",
+    "Removes the current screen",
+    "Restarts the app",
+    "Closes the app"
+   ],
+   1
+  ],
+  [
+   "Which widget implicitly animates changes to its properties?",
+   [
+    "AnimatedContainer",
+    "Scaffold",
+    "Stack",
+    "Divider"
+   ],
+   0
+  ],
+  [
+   "Which method runs once when a State object is created?",
+   [
+    "build()",
+    "initState()",
+    "dispose()",
+    "setState()"
+   ],
+   1
+  ]
+ ],
+ "Python": [
+  [
+   "Which keyword defines a function in Python?",
+   [
+    "func",
+    "def",
+    "function",
+    "fun"
+   ],
+   1
+  ],
+  [
+   "What is the output of len(\"abc\")?",
+   [
+    "2",
+    "3",
+    "4",
+    "Error"
+   ],
+   1
+  ],
+  [
+   "Which symbol starts a single-line comment?",
+   [
+    "//",
+    "#",
+    "/*",
+    "--"
+   ],
+   1
+  ],
+  [
+   "Which data type is immutable?",
+   [
+    "list",
+    "dict",
+    "tuple",
+    "set"
+   ],
+   2
+  ],
+  [
+   "Which function reads user input?",
+   [
+    "scan()",
+    "read()",
+    "input()",
+    "get()"
+   ],
+   2
+  ],
+  [
+   "Which brackets create a list?",
+   [
+    "()",
+    "[]",
+    "{}",
+    "<>"
+   ],
+   1
+  ],
+  [
+   "What is the value of 2 ** 3?",
+   [
+    "6",
+    "8",
+    "9",
+    "5"
+   ],
+   1
+  ],
+  [
+   "Which keyword is used to loop over items?",
+   [
+    "loop",
+    "foreach",
+    "for",
+    "iterate"
+   ],
+   2
+  ],
+  [
+   "Which block handles exceptions in Python?",
+   [
+    "try-catch",
+    "try-except",
+    "catch-throw",
+    "do-handle"
+   ],
+   1
+  ],
+  [
+   "Which function returns the type of a value?",
+   [
+    "typeof()",
+    "type()",
+    "kind()",
+    "class()"
+   ],
+   1
+  ],
+  [
+   "What is the output of \"Hi\" * 2?",
+   [
+    "HiHi",
+    "Hi2",
+    "Error",
+    "Hi Hi"
+   ],
+   0
+  ],
+  [
+   "Which method adds an item to the end of a list?",
+   [
+    "add()",
+    "push()",
+    "append()",
+    "insert_end()"
+   ],
+   2
+  ],
+  [
+   "What is the file extension of a Python file?",
+   [
+    ".pt",
+    ".pyt",
+    ".py",
+    ".python"
+   ],
+   2
+  ],
+  [
+   "Which is a valid variable name?",
+   [
+    "2name",
+    "my_name",
+    "my-name",
+    "class"
+   ],
+   1
+  ],
+  [
+   "Which library is popular for data frames?",
+   [
+    "pandas",
+    "pygame",
+    "flask",
+    "tkinter"
+   ],
+   0
+  ],
+  [
+   "What is the result of 10 // 3?",
+   [
+    "3.33",
+    "3",
+    "4",
+    "1"
+   ],
+   1
+  ],
+  [
+   "Which keyword exits a loop early?",
+   [
+    "stop",
+    "exit",
+    "break",
+    "end"
+   ],
+   2
+  ],
+  [
+   "Python code is mostly:",
+   [
+    "Compiled to machine code first",
+    "Interpreted",
+    "Written in assembly",
+    "Only markup"
+   ],
+   1
+  ],
+  [
+   "A dictionary stores data as:",
+   [
+    "Key-value pairs",
+    "Only numbers",
+    "Rows and columns",
+    "Single values"
+   ],
+   0
+  ],
+  [
+   "Which module generates random numbers?",
+   [
+    "math",
+    "random",
+    "sys",
+    "os"
+   ],
+   1
+  ],
+  [
+   "What does range(3) produce?",
+   [
+    "1,2,3",
+    "0,1,2",
+    "0,1,2,3",
+    "3 only"
+   ],
+   1
+  ],
+  [
+   "Which keyword creates a class?",
+   [
+    "struct",
+    "class",
+    "object",
+    "define"
+   ],
+   1
+  ],
+  [
+   "Which keyword adds a second condition after if?",
+   [
+    "else if",
+    "elif",
+    "elseif",
+    "elsif"
+   ],
+   1
+  ],
+  [
+   "Which operator checks equality?",
+   [
+    "=",
+    "==",
+    "===",
+    "!=="
+   ],
+   1
+  ],
+  [
+   "What does list(set([1,1,2])) contain?",
+   [
+    "[1,1,2]",
+    "[1,2]",
+    "[2]",
+    "Error"
+   ],
+   1
+  ]
+ ],
+ "Java & C": [
+  [
+   "What does JVM stand for?",
+   [
+    "Java Variable Method",
+    "Java Virtual Machine",
+    "Joint Visual Model",
+    "Java Verified Module"
+   ],
+   1
+  ],
+  [
+   "Which keyword creates an object in Java?",
+   [
+    "new",
+    "make",
+    "create",
+    "alloc"
+   ],
+   0
+  ],
+  [
+   "Which is the entry point of a Java program?",
+   [
+    "main()",
+    "start()",
+    "run()",
+    "init()"
+   ],
+   0
+  ],
+  [
+   "Which keyword is used for inheritance in Java?",
+   [
+    "implements",
+    "extends",
+    "inherits",
+    "super"
+   ],
+   1
+  ],
+  [
+   "What is the default value of an int field in Java?",
+   [
+    "null",
+    "0",
+    "1",
+    "undefined"
+   ],
+   1
+  ],
+  [
+   "Which of these is NOT a primitive type in Java?",
+   [
+    "int",
+    "boolean",
+    "String",
+    "char"
+   ],
+   2
+  ],
+  [
+   "Which keyword prevents a method from being overridden?",
+   [
+    "static",
+    "final",
+    "abstract",
+    "void"
+   ],
+   1
+  ],
+  [
+   "Which collection stores only unique elements?",
+   [
+    "ArrayList",
+    "HashSet",
+    "LinkedList",
+    "Vector"
+   ],
+   1
+  ],
+  [
+   "Which keyword refers to the current object in Java?",
+   [
+    "self",
+    "this",
+    "me",
+    "current"
+   ],
+   1
+  ],
+  [
+   "Java's 'write once, run anywhere' is possible because of:",
+   [
+    "Pointers",
+    "Bytecode",
+    "Macros",
+    "Header files"
+   ],
+   1
+  ],
+  [
+   "Which keyword handles exceptions in Java?",
+   [
+    "catch",
+    "handle",
+    "rescue",
+    "except"
+   ],
+   0
+  ],
+  [
+   "How should you compare the content of two Strings in Java?",
+   [
+    "==",
+    "equals()",
+    "compare==",
+    "is()"
+   ],
+   1
+  ],
+  [
+   "What is the size of int in Java?",
+   [
+    "2 bytes",
+    "4 bytes",
+    "8 bytes",
+    "Depends on OS"
+   ],
+   1
+  ],
+  [
+   "Which header file is needed for printf() in C?",
+   [
+    "stdlib.h",
+    "stdio.h",
+    "string.h",
+    "math.h"
+   ],
+   1
+  ],
+  [
+   "Which operator gives the address of a variable in C?",
+   [
+    "*",
+    "&",
+    "#",
+    "@"
+   ],
+   1
+  ],
+  [
+   "Which operator dereferences a pointer in C?",
+   [
+    "&",
+    "*",
+    "%",
+    "^"
+   ],
+   1
+  ],
+  [
+   "What does sizeof(char) return in C?",
+   [
+    "1",
+    "2",
+    "4",
+    "8"
+   ],
+   0
+  ],
+  [
+   "Which function allocates memory dynamically in C?",
+   [
+    "alloc()",
+    "malloc()",
+    "new()",
+    "create()"
+   ],
+   1
+  ],
+  [
+   "Which loop always runs at least once?",
+   [
+    "for",
+    "while",
+    "do-while",
+    "foreach"
+   ],
+   2
+  ],
+  [
+   "Which format specifier prints an int in C?",
+   [
+    "%f",
+    "%d",
+    "%c",
+    "%s"
+   ],
+   1
+  ],
+  [
+   "C is mainly which type of language?",
+   [
+    "Object-oriented only",
+    "Procedural",
+    "Markup",
+    "Scripting only"
+   ],
+   1
+  ],
+  [
+   "What ends a statement in C?",
+   [
+    ".",
+    ",",
+    ";",
+    ":"
+   ],
+   2
+  ],
+  [
+   "Which function copies one string into another in C?",
+   [
+    "strcat()",
+    "strcpy()",
+    "strlen()",
+    "strcmp()"
+   ],
+   1
+  ],
+  [
+   "In C, array indexing starts at:",
+   [
+    "0",
+    "1",
+    "-1",
+    "Depends"
+   ],
+   0
+  ],
+  [
+   "Which keyword declares a constant in C?",
+   [
+    "final",
+    "const",
+    "let",
+    "readonly"
+   ],
+   1
+  ]
+ ],
+ "CS Core": [
+  [
+   "Which data structure follows LIFO?",
+   [
+    "Queue",
+    "Stack",
+    "Array",
+    "Tree"
+   ],
+   1
+  ],
+  [
+   "Which OSI layer handles routing?",
+   [
+    "Transport",
+    "Data Link",
+    "Network",
+    "Session"
+   ],
+   2
+  ],
+  [
+   "What does SQL stand for?",
+   [
+    "Structured Query Language",
+    "Simple Query Logic",
+    "Sequential Query Language",
+    "Strong Question Language"
+   ],
+   0
+  ],
+  [
+   "What is the time complexity of binary search?",
+   [
+    "O(n)",
+    "O(log n)",
+    "O(n^2)",
+    "O(1)"
+   ],
+   1
+  ],
+  [
+   "Which scheduling algorithm is non-preemptive?",
+   [
+    "Round Robin",
+    "SRTF",
+    "FCFS",
+    "Multilevel Feedback"
+   ],
+   2
+  ],
+  [
+   "A primary key must be:",
+   [
+    "Repeated",
+    "Unique and not null",
+    "Always text",
+    "Optional"
+   ],
+   1
+  ],
+  [
+   "Which SQL command retrieves data?",
+   [
+    "GET",
+    "SELECT",
+    "FETCH",
+    "PULL"
+   ],
+   1
+  ],
+  [
+   "What is the purpose of normalization?",
+   [
+    "Increase redundancy",
+    "Reduce redundancy",
+    "Encrypt data",
+    "Speed up the CPU"
+   ],
+   1
+  ],
+  [
+   "In ACID, what does 'A' stand for?",
+   [
+    "Atomicity",
+    "Accuracy",
+    "Access",
+    "Authority"
+   ],
+   0
+  ],
+  [
+   "Processes waiting on each other forever is called:",
+   [
+    "Starvation",
+    "Deadlock",
+    "Thrashing",
+    "Paging"
+   ],
+   1
+  ],
+  [
+   "Which technique divides memory into fixed-size blocks?",
+   [
+    "Segmentation",
+    "Paging",
+    "Swapping",
+    "Spooling"
+   ],
+   1
+  ],
+  [
+   "Which protocol loads web pages securely?",
+   [
+    "FTP",
+    "HTTPS",
+    "SMTP",
+    "Telnet"
+   ],
+   1
+  ],
+  [
+   "How many bits are in an IPv4 address?",
+   [
+    "16",
+    "32",
+    "64",
+    "128"
+   ],
+   1
+  ],
+  [
+   "Which device connects different networks together?",
+   [
+    "Hub",
+    "Switch",
+    "Router",
+    "Repeater"
+   ],
+   2
+  ],
+  [
+   "TCP is a:",
+   [
+    "Connectionless protocol",
+    "Connection-oriented protocol",
+    "Broadcast-only protocol",
+    "Hardware device"
+   ],
+   1
+  ],
+  [
+   "What is the default port of HTTP?",
+   [
+    "21",
+    "25",
+    "80",
+    "443"
+   ],
+   2
+  ],
+  [
+   "A queue follows which order?",
+   [
+    "LIFO",
+    "FIFO",
+    "Random",
+    "Priority only"
+   ],
+   1
+  ],
+  [
+   "Worst-case time complexity of bubble sort?",
+   [
+    "O(n)",
+    "O(n log n)",
+    "O(n^2)",
+    "O(log n)"
+   ],
+   2
+  ],
+  [
+   "Which traversal uses a queue?",
+   [
+    "DFS",
+    "BFS",
+    "Inorder",
+    "Preorder"
+   ],
+   1
+  ],
+  [
+   "Supervised learning uses:",
+   [
+    "Unlabeled data",
+    "Labeled data",
+    "No data",
+    "Only images"
+   ],
+   1
+  ],
+  [
+   "Overfitting means the model:",
+   [
+    "Performs well on new data",
+    "Memorizes training data and fails on new data",
+    "Is too small to learn",
+    "Has no features"
+   ],
+   1
+  ],
+  [
+   "Which algorithm is used for classification?",
+   [
+    "Linear Regression",
+    "Logistic Regression",
+    "K-Means",
+    "PCA"
+   ],
+   1
+  ],
+  [
+   "Average lookup time in a hash table?",
+   [
+    "O(1)",
+    "O(n)",
+    "O(log n)",
+    "O(n^2)"
+   ],
+   0
+  ],
+  [
+   "Threads of a process:",
+   [
+    "Have separate memory",
+    "Share the process memory",
+    "Are heavier than processes",
+    "Cannot run together"
+   ],
+   1
+  ],
+  [
+   "Which scheduling algorithm uses a time quantum?",
+   [
+    "FCFS",
+    "SJF",
+    "Round Robin",
+    "Priority"
+   ],
+   2
+  ]
+ ]
+};
+
+const CATS = {
+  'Flutter & Dart': {e:'🐦', c:['#00C6FF','#0072FF'], d:'Widgets, state, navigation'},
+  'Python':         {e:'🐍', c:['#11998E','#38EF7D'], d:'Syntax, data types, libraries'},
+  'Java & C':       {e:'☕', c:['#FF512F','#F09819'], d:'OOP, pointers, memory'},
+  'CS Core':        {e:'🧠', c:['#8E2DE2','#E040FB'], d:'DBMS, OS, CN, DSA, ML'},
+  'Mixed':          {e:'🎲', c:['#EC008C','#FC6767'], d:'10 random from all 100'}
+};
+const OPT_COLORS = ['#FF6B6B','#1DD1A1','#FFA502','#7C4DFF'];
+const QUIZ_SIZE = 10, LIMIT = 15;
+const TOTAL = Object.values(bank).reduce((s,l) => s + l.length, 0);
+const poolFor = c => c === 'Mixed' ? Object.values(bank).flat() : bank[c];
+
+function load(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } }
+function save(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+function shuffle(a){ for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+let used = load('qv_used', {});
+let S = { name:'', email:'', cat:'', qs:[], picked:[], i:0, left:LIMIT, points:0, streak:0, bestStreak:0, gain:0, board: load('qv_board', []) };
+let timer = null;
+const app = document.getElementById('app');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const gv = c => `--g1:${CATS[c].c[0]};--g2:${CATS[c].c[1]}`;
+
+function toggleTheme(){ const h = document.documentElement; h.dataset.theme = h.dataset.theme === 'dark' ? 'light' : 'dark'; }
+function setHeader(title, left, right){
+  document.getElementById('title').textContent = title;
+  document.getElementById('hl').innerHTML = left || '';
+  document.getElementById('hr').innerHTML = right || '';
+}
+function go(fn){ clearInterval(timer); window.scrollTo(0, 0); fn(); }
+const correctCount = () => S.qs.reduce((s, q, i) => s + (S.picked[i] === q[2] ? 1 : 0), 0);
+const best = () => S.board.filter(e => e.name === S.name).reduce((m, e) => Math.max(m, e.points), 0);
+
+// ---------- LOGIN (form + validation) ----------
+function loginScreen(){
+  setHeader('Online Quiz App');
+  app.innerHTML = `
+  <div class="screen narrow"><form class="card center" id="f" novalidate>
+    <div class="logo">🧠</div><div class="brand">QuizVerse</div><p class="sub">Test your skills. Beat the clock.</p>
+    <div class="field" id="fn"><input id="n" placeholder="Name"><div class="err"></div></div>
+    <div class="field" id="fe"><input id="e" placeholder="Email" type="email"><div class="err"></div></div>
+    <div class="field" id="fp"><input id="p" placeholder="Password" type="password"><div class="err"></div></div>
+    <button class="btn" type="submit">🚀 Let's Go!</button>
+  </form></div>`;
+  const check = (id, ok, msg) => {
+    const f = document.getElementById(id);
+    f.classList.toggle('bad', !ok);
+    f.querySelector('.err').textContent = ok ? '' : msg;
+    return ok;
+  };
+  document.getElementById('f').onsubmit = ev => {
+    ev.preventDefault();
+    const n = document.getElementById('n').value.trim();
+    const e = document.getElementById('e').value.trim();
+    const p = document.getElementById('p').value;
+    const a = check('fn', n.length >= 3, n ? 'At least 3 characters' : 'Enter your name');
+    const b = check('fe', /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e), e ? 'Enter a valid email' : 'Enter your email');
+    const c = check('fp', p.length >= 6, p ? 'Minimum 6 characters' : 'Enter a password');
+    if (a && b && c){ S.name = n; S.email = e; go(homeScreen); }
+  };
+}
+
+// ---------- HOME ----------
+function homeScreen(){
+  setHeader('Hi, ' + S.name + ' 👋', '',
+    `<button class="ib" title="Leaderboard" onclick="go(boardScreen)">🏆</button><button class="ib" title="Logout" onclick="go(loginScreen)">🚪</button>`);
+  app.innerHTML = `<div class="screen wide">
+    <div class="banner"><b>🏆 Your best score: ${best()} pts</b>📚 ${TOTAL} questions in the database • ${QUIZ_SIZE} random ones every attempt</div>
+    <h2 style="margin-bottom:12px">Pick your arena</h2><div class="grid">` +
+    Object.keys(CATS).map((c, i) => `
+      <div class="card cat" style="${gv(c)};animation-delay:${i * 0.12}s" onclick="startQuiz('${c}')">
+        <div class="ic">${CATS[c].e}</div>
+        <div style="flex:1"><h3>${c}</h3><p>${CATS[c].d}</p><small>${poolFor(c).length} in database</small></div>
+        <div style="font-size:30px">▶</div>
+      </div>`).join('') + `</div></div>`;
+}
+
+// ---------- QUIZ (10 random from the database, rotated) ----------
+function startQuiz(c){
+  const pool = poolFor(c);
+  let seen = used[c] || [];
+  let fresh = pool.map((_, i) => i).filter(i => !seen.includes(i));
+  if (fresh.length < QUIZ_SIZE){ seen = []; fresh = pool.map((_, i) => i); } // rotation reset
+  shuffle(fresh);
+  const chosen = fresh.slice(0, QUIZ_SIZE);
+  used[c] = seen.concat(chosen); save('qv_used', used);
+  S.cat = c;
+  S.qs = chosen.map(i => { const q = pool[i], right = q[1][q[2]], o = shuffle([...q[1]]); return [q[0], o, o.indexOf(right)]; });
+  S.picked = new Array(S.qs.length).fill(null);
+  S.i = 0; S.points = 0; S.streak = 0; S.bestStreak = 0; S.gain = 0;
+  go(quizScreen);
+}
+function quizScreen(){
+  const q = S.qs[S.i], last = S.i === S.qs.length - 1;
+  S.left = LIMIT;
+  setHeader(CATS[S.cat].e + ' ' + S.cat, `<button class="ib" onclick="go(homeScreen)" title="Quit">←</button>`);
+  app.innerHTML = `
+  <div class="screen" style="${gv(S.cat)}">
+    <div class="pills">
+      <span class="pill p-pts" id="pp">⭐ ${S.points} pts</span>
+      <span class="pill p-str" id="ps">🔥 ${S.streak}</span>
+      <span class="pill p-tm" id="tm">⏱ ${S.left} s</span>
+    </div>
+    <b>Question ${S.i + 1} of ${S.qs.length}</b>
+    <div class="bar"><div style="width:${S.i / S.qs.length * 100}%" id="pb"></div></div>
+    <div class="q">${esc(q[0])}</div>
+    <div id="opts"></div>
+    <div class="fb" id="fb"></div>
+    <div class="btns"><button class="btn" id="nx" disabled>${last ? '🏁 Finish' : 'Next →'}</button></div>
+  </div>`;
+  requestAnimationFrame(() => document.getElementById('pb').style.width = ((S.i + 1) / S.qs.length * 100) + '%');
+  drawOpts();
+  document.getElementById('nx').onclick = () => {
+    if (last){
+      S.board.push({name:S.name, cat:S.cat, points:S.points, correct:correctCount(), total:S.qs.length});
+      S.board.sort((a, b) => b.points - a.points); save('qv_board', S.board);
+      go(resultScreen);
+    } else { S.i++; go(quizScreen); }
+  };
+  timer = setInterval(() => {
+    S.left--;
+    const t = document.getElementById('tm');
+    if (t){ t.textContent = '⏱ ' + S.left + ' s'; t.classList.toggle('low', S.left <= 5); }
+    if (S.left <= 0){ clearInterval(timer); pick(-1); }
+  }, 1000);
+}
+function drawOpts(){
+  const q = S.qs[S.i], pk = S.picked[S.i];
+  document.getElementById('opts').innerHTML = q[1].map((o, i) => {
+    let cls = '';
+    if (pk !== null) cls = i === q[2] ? 'correct' : (i === pk ? 'wrong' : 'dim');
+    const mark = cls === 'correct' ? '✅' : (cls === 'wrong' ? '❌' : '');
+    return `<button class="opt ${cls}" ${pk !== null ? 'disabled' : ''} onclick="pick(${i})">
+      <span class="l" style="background:${OPT_COLORS[i % 4]}">${String.fromCharCode(65 + i)}</span><span class="t">${esc(o)}</span><span>${mark}</span></button>`;
+  }).join('');
+  document.getElementById('nx').disabled = pk === null;
+}
+function pick(i){
+  if (S.picked[S.i] !== null) return;
+  clearInterval(timer);
+  S.picked[S.i] = i;
+  const q = S.qs[S.i];
+  let fb;
+  if (i === q[2]){
+    S.streak++; S.bestStreak = Math.max(S.bestStreak, S.streak);
+    S.gain = 10 + Math.max(S.left, 0); S.points += S.gain;
+    fb = `+${S.gain} pts ${S.streak >= 3 ? '🔥 ' + S.streak + ' in a row!' : '🎉'}`;
+  } else {
+    S.streak = 0; S.gain = 0;
+    fb = i === -1 ? "⏰ Time's up!" : '❌ Not quite!';
+  }
+  document.getElementById('pp').textContent = '⭐ ' + S.points + ' pts';
+  document.getElementById('ps').textContent = '🔥 ' + S.streak;
+  document.getElementById('fb').textContent = fb;
+  drawOpts();
+}
+
+// ---------- RESULT ----------
+function resultScreen(){
+  const ok = correctCount(), total = S.qs.length, pct = ok / total, C = 2 * Math.PI * 84;
+  const msg = pct >= .8 ? 'Excellent! 🎉' : pct >= .5 ? 'Good job! 👍' : 'Keep practicing! 💪';
+  setHeader('Result');
+  app.innerHTML = `
+  <div class="screen center" style="${gv(S.cat)}">
+    <div class="ring">
+      <svg width="190" height="190"><circle class="bg" cx="95" cy="95" r="84"/><circle class="fg" id="fg" cx="95" cy="95" r="84" stroke-dasharray="${C}" stroke-dashoffset="${C}"/></svg>
+      <div class="txt"><b>${ok}/${total}</b><span>${Math.round(pct * 100)}% correct</span></div>
+    </div>
+    <h2>${msg}</h2>
+    <div class="pills c" style="margin-top:12px"><span class="pill p-pts">⭐ ${S.points} pts</span><span class="pill p-ok">✅ ${ok} correct</span><span class="pill p-str">🔥 best streak ${S.bestStreak}</span></div>
+    <h3 style="text-align:left;margin:20px 0 10px">Review</h3>` +
+    S.qs.map((q, i) => {
+      const right = S.picked[i] === q[2];
+      const chosen = (S.picked[i] === null || S.picked[i] < 0) ? 'Time up' : q[1][S.picked[i]];
+      return `<div class="card rev"><span class="m">${right ? '✅' : '❌'}</span><div>${esc(q[0])}<small>Correct: ${esc(q[1][q[2]])}${right ? '' : '\nYou chose: ' + esc(chosen)}</small></div></div>`;
+    }).join('') + `
+    <div class="btns"><button class="btn" onclick="go(homeScreen)">🔁 Play Again</button><button class="btn" style="--g1:#FF9800;--g2:#FF5722" onclick="go(boardScreen)">🏆 Leaderboard</button></div>
+  </div>`;
+  requestAnimationFrame(() => setTimeout(() => document.getElementById('fg').style.strokeDashoffset = C * (1 - pct), 50));
+  if (pct >= .5) confetti();
+}
+function confetti(){
+  const cols = ['#7C4DFF','#E040FB','#FF6E7F','#FFA502','#1DD1A1','#00B0FF'];
+  for (let i = 0; i < 40; i++){
+    const d = document.createElement('div');
+    d.className = 'conf';
+    d.style.left = Math.random() * 100 + 'vw';
+    d.style.background = cols[i % cols.length];
+    d.style.animationDuration = (2 + Math.random() * 2) + 's';
+    d.style.animationDelay = (Math.random() * 0.8) + 's';
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 5000);
+  }
+}
+
+// ---------- LEADERBOARD ----------
+function boardScreen(){
+  setHeader('Leaderboard', `<button class="ib" onclick="go(S.name ? homeScreen : loginScreen)">←</button>`);
+  const medals = ['🥇', '🥈', '🥉'];
+  app.innerHTML = `<div class="screen">` + (S.board.length ? S.board.slice(0, 20).map((e, i) => `
+    <div class="card lb"><div class="rk">${i < 3 ? medals[i] : i + 1}</div><div class="nm"><b>${esc(e.name)}</b><small>${esc(e.cat)} • ${e.correct}/${e.total} correct</small></div><div class="sc">${e.points} pts</div></div>`).join('')
+    : '<p class="center" style="margin-top:40px;color:var(--muted)">No scores yet. Play a quiz first!</p>') + `</div>`;
+}
+
+loginScreen();
+</script>
+</body>
+</html>
